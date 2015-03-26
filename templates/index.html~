@@ -1,0 +1,58 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+    <title> Live Tweets </title>
+    <link rel="stylesheet" href="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.css" />
+    <script src="http://cdn.leafletjs.com/leaflet-0.7.3/leaflet.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.4.2.min.js"></script>
+    <script type="text/javascript" src="//cdnjs.cloudflare.com/ajax/libs/socket.io/0.9.16/socket.io.min.js"></script>
+    <script type="text/javascript" charset="utf-8">
+        $(document).ready(function(){
+	    var markers = new Array();
+            var map = L.map('map').setView([0, 0], 2);
+
+		L.tileLayer('https://{s}.tiles.mapbox.com/v3/{id}/{z}/{x}/{y}.png', {
+			maxZoom: 18,
+			attribution: 'Map data &copy; <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, ' +
+				'<a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, ' +
+				'Imagery © <a href="http://mapbox.com">Mapbox</a>',
+			id: 'examples.map-i875mjb7'
+		}).addTo(map);
+
+
+            namespace = '/test'; // change to an empty string to use the global namespace
+            // the socket.io documentation recommends sending an explicit package upon connection
+            // this is specially important when using the global namespace
+            var socket = io.connect('http://' + document.domain + ':' + location.port + namespace);
+            socket.on('connect', function() {
+                socket.emit('my event', {data: 'I\'m connected!'});
+            });
+            // event handler for server sent data
+            // the data is displayed in the "Received" section of the page
+            socket.on('my response', function(msg) {
+                //$('#log').append('<br>'+ msg.data);
+            });
+
+            socket.on('coordinates', function(msg) {
+		if (markers.length >= 1){
+    		    map.removeLayer(markers[0]);
+                    markers.splice(0,1)
+		    //$('#log').append('<br>'+ 'Removed layer');
+
+		}
+                var marker = new L.marker([msg.lat,msg.long])
+		marker.bindPopup(msg.text);
+		markers.push(marker);
+		map.addLayer(markers[markers.length-1]);
+                //$('#log').append('<br>'+ msg.lat+ ' '+msg.long +' '+ msg.text);
+            });
+            
+        });
+    </script>
+</head>
+<body>
+    <div id="map" style="width:100%; height:100%; position: absolute;" class="leaflet-container leaflet-fade-anim" tabindex="0"></div>
+    <br>
+    <div id="log"></div>
+</body>
+</html>
