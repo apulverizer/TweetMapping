@@ -1,5 +1,5 @@
 # TweetMapping
-A A Flask app that pushes the most current 100 tweets with coordinates to a leaflet map.
+A Flask app that pushes the most current 100 tweets with coordinates to a leaflet map.
 
 # Installation
  1. Install Python 2 (if not installed)
